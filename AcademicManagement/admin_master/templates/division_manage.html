@@ -1,0 +1,175 @@
+{% extends 'admin_base.html' %}
+{% block content %}
+<ul class="breadcrumb">
+    <li><a href="#">Home</a></li>     
+    <li class="active">Master</li>               
+    <li class="active">Division</li>
+</ul>
+<!-- END BREADCRUMB -->                       
+<div class="page-title">                    
+    <h2><span class="fa fa-arrow-circle-o-left"></span> Manage Division</h2>
+</div>                   
+
+
+<!-- PAGE CONTENT WRAPPER -->
+<div class="page-content-wrap">
+
+    <div class="row">
+        <div class="col-md-12">
+            <form class="form-horizontal" method='post' enctype="multipart/form-data">
+                {% csrf_token %}
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <h3 class="panel-title"><strong>New </strong> Division</h3>
+                    <ul class="panel-controls">
+                        <li><a href="#" class="panel-remove"><span class="fa fa-times"></span></a></li>
+                    </ul>
+                </div>
+                <div class="panel-body">                                                                        
+                    
+                    <div class="row">
+                        <div class="col-md-12 px-5 ">
+                            <div class="form-group">
+                                <input type="text" name='division_name' required autofocus class="form-control" placeholder="Division Name"/>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    
+
+                </div>
+                <div class="panel-footer">
+                    <input type="reset" value="Clear Form" class="btn btn-default">                                   
+                    <button class="btn btn-primary pull-right">Submit</button>
+                </div>
+            </div>
+            </form>
+            <div class="panel panel-default">
+                <div class="panel-heading">                                
+                    <h3 class="panel-title">Default</h3>
+                    <ul class="panel-controls">
+                        <li><a href="#" class="panel-collapse"><span class="fa fa-angle-down"></span></a></li>
+                        <li><a href="#" class="panel-refresh"><span class="fa fa-refresh"></span></a></li>
+                        <li><a href="#" class="panel-remove"><span class="fa fa-times"></span></a></li>
+                    </ul>                                
+                </div>
+                <div class="panel-body">
+                    <table class="table datatable">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Division Name</th>
+                                
+                                <th>Status</th>
+                                <th>Action</th>
+
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for academic_division in academic_divisions %}
+                            <tr id="{{academic_division.id}}">
+                                <td>{{ forloop.counter }}</td>
+                                <td>{{ academic_division.division_name }}</td>
+                                <td>
+                                    {% if academic_division.is_active %}
+                                    <span class="label label-success label-form">Active</span>
+                                    {% else %}
+                                    <span class="label label-danger ">Deactive</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <button class="btn btn-info" onclick="edit_pop_division({{academic_division.id}})">
+                                        <span id ="spinner{{academic_division.id}}" class="fa fa-pencil"></span>
+                                    </button>
+                                    {% if not academic_division.is_active %}
+                                    <a onclick="delete_division({{academic_division.id}})">
+                                        <button class="btn btn-danger">
+                                            <span class="glyphicon glyphicon-trash"></span>
+                                        </button>
+                                    </a>{% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}  
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <input type="hidden" value="{{ request.scheme }}://{{ request.get_host }}/get_division_details/" name="" id="url">
+
+        </div>
+        
+    </div>
+
+</div>
+
+{% endblock %}
+{% block message %}
+
+<div class="message-box animated fadeIn" data-sound="alert" id="mb-remove-row">
+    <div class="mb-container">
+        <div class="mb-middle">
+            <div class="mb-title"><span class="fa fa-times"></span> Remove <strong>Data</strong> ?</div>
+            <div class="mb-content">
+                <p>Are you sure you want to delete?</p>                    
+                <p>Press Yes if you sure.</p>
+            </div>
+            <div class="mb-footer">
+                <div class="pull-right">
+                    <input type="hidden" value="{{ request.scheme }}://{{ request.get_host }}/delete_division/" name="" id="deleteurl">
+                    <button class="btn btn-success btn-lg mb-control-yes">Yes</button>
+                    <button class="btn btn-default btn-lg mb-control-close">No</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<!-- Bootstrap 3.x Modal -->
+<div class="modal fade" id="modal-default" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+          <h4 class="modal-title" id="myModalLabel">Edit Division</h4>
+        </div>
+        <div class="modal-body">
+            <div class="row custom-margin-bottom">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <div class="col-md-12 col-xs-12">
+                            <input type="hidden"  id="edit_id"/>
+                            <input type="text" id="edit_name" class="form-control"  placeholder="Division Name"/>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <div class="col-md-12 col-xs-12">                                                                                            
+                            <select class="form-control " id="edit_select">
+                                <option value="1">Active</option>
+                                <option value="0">Deactive</option>
+                                
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        
+            
+        </div>
+        
+        <div class="modal-footer">
+            <button type="button" class="btn btn-default pull-left" data-dismiss="modal">Close</button>
+            <button type="button" class="btn btn-primary pull-right" onclick="edit_division()">Update</button>
+            <input type="hidden" value="{{ request.scheme }}://{{ request.get_host }}/update_division_details/" name="" id="contacturl">
+        </div>
+        
+        
+      </div><!-- /.modal-content -->
+    </div><!-- /.modal-dialog -->
+  </div><!-- /.modal -->
+  
+{% endblock %}

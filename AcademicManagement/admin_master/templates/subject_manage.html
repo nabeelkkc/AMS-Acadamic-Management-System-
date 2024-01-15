@@ -1,0 +1,318 @@
+{% extends 'admin_base.html' %}
+{% block content %}
+<ul class="breadcrumb">
+    <li><a href="#">Home</a></li>
+    <li><a href="#">Master</a></li>
+    <li class="active">Subjects</li>
+</ul>
+<!-- END BREADCRUMB -->
+
+<!-- PAGE TITLE -->
+<div class="page-title">                    
+    <h2><span class="fa fa-arrow-circle-o-left"></span>Manage Subjects</h2>
+</div>
+<!-- END PAGE TITLE -->                
+
+<!-- PAGE CONTENT WRAPPER -->
+<div class="page-content-wrap">                
+
+    <div class="row">
+
+        <div class="col-md-6">
+            <form class="form-horizontal" method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <h3 class="panel-title"><strong>New </strong> Subjects</h3>
+                    <ul class="panel-controls">
+                        <li><a href="#" class="panel-remove"><span class="fa fa-times"></span></a></li>
+                    </ul>
+                </div>
+                <div class="panel-body">                                                                        
+                    
+                    <div class="row">
+                        
+                        <div class="col-md-12">
+                            
+                            <div class="form-group">
+                                <div class="col-md-12 col-xs-12">                                                                                                                                                        
+                                    <input type="text" required autofocus name='subject_name' class="form-control" placeholder="Subject Name"/>                                                    
+                                </div>
+                            </div>
+                            
+                            
+                        </div>
+                        
+                        
+                    </div>
+
+                </div>
+                <div class="panel-heading">
+                    <h3 class="panel-title"><strong>Class </strong></h3>
+                    <ul class="panel-controls">
+                        <li><div class="checkbox">
+                            <input type="checkbox" 
+                            class="classCheckbox"
+                            {% comment %} class="icheckbox" {% endcomment %}
+                             id="selectAllCheckbox" onclick="checkAll()" />
+                            
+                        </div></li>
+                    </ul>
+                </div>
+                
+                <div class="panel-body">                                                                        
+                    
+                    <div class="row">
+                        
+                        <div class="col-md-12">
+                            {% for class in academic_classes %}
+                            <div class="checkbox">
+                                <input type="checkbox" name="classes" class="classCheckbox" value="{{class.id}}"/>
+                                <label style="font-weight: bold;">Class {{class.class_name}}</label>
+                            </div>
+                        {% endfor %}
+                        
+                            
+                            
+                            
+                            {% comment %} <div class="form-group">
+                                <div class="col-md-12 col-xs-12">                                                                                                                                                        
+                                    <input type="text" required autofocus name='department_name' class="form-control" placeholder="Subject Name"/>                                                    
+                                </div>
+                            </div>
+                             {% endcomment %}
+                            
+                        </div>
+                        
+                        
+                    </div>
+
+                </div>
+
+                <div class="panel-footer">
+                    <input type="reset" value="Clear Form" class="btn btn-default">                                 
+                    <button class="btn btn-primary pull-right">Submit</button>
+                </div>
+            </div>
+        </form>
+
+
+        </div>
+
+        <div class="col-md-6">
+
+            <div class="panel panel-default">
+                <div class="panel-heading">                                
+                    <h3 class="panel-title">Default</h3>
+                    <ul class="panel-controls">
+                        <li><a href="#" class="panel-collapse"><span class="fa fa-angle-down"></span></a></li>
+                        <li><a href="#" class="panel-refresh"><span class="fa fa-refresh"></span></a></li>
+                        <li><a href="#" class="panel-remove"><span class="fa fa-times"></span></a></li>
+                    </ul>                                
+                </div>
+                <div class="panel-body">
+                    <table class="table datatable">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Subjects Name</th>
+                                <th>Status</th>
+                                <th>Action</th>
+
+                            </tr>
+                        </thead>
+                        <tbody> 
+                            {% for Subject in academic_subject %}
+                            <tr id="{{Subject.id}}">
+                                <td>{{ forloop.counter }}</td>
+                                <td>{{ Subject.subject_name }}</td>
+                                <td>
+                                    {% if Subject.is_active %}
+                                    <span class="label label-success label-form">Active</span>
+                                    {% else %}
+                                    <span class="label label-danger label-form">Deactive</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <button class="btn btn-info" onclick="edit_pop_subject({{Subject.id}})">
+                                        <span id ="spinner{{Subject.id}}" class="fa fa-pencil"></span>
+                                    </button>
+                                    {% if not Subject.is_active %}
+                                    
+                                        <button class="btn btn-danger" onclick="delete_subject({{Subject.id}})">
+                                            <span class="glyphicon glyphicon-trash"></span>
+                                        </button>
+                                    
+                                    {% endif %}
+                                    <button class="btn btn-primary" onclick="edit_view_subject({{Subject.id}})">
+                                        
+                                        <span class="glyphicon glyphicon-eye-open"></span>
+                                    </button>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <input type="hidden" value="{{ request.scheme }}://{{ request.get_host }}/get_subject_details/" name="" id="url">
+            <input type="hidden" value="{{ request.scheme }}://{{ request.get_host }}/get_subject_view/" name="" id="viewurl">
+
+        </div>
+
+    </div>
+
+
+    
+</div>
+{% endblock %}
+
+{% block message %}
+
+<div class="message-box animated fadeIn" data-sound="alert" id="mb-remove-row">
+    <div class="mb-container">
+        <div class="mb-middle">
+            <div class="mb-title"><span class="fa fa-times"></span> Remove <strong>Data</strong> ?</div>
+            <div class="mb-content">
+                <p>Are you sure you want to delete?</p>                    
+                <p>Press Yes if you sure.</p>
+            </div>
+            <div class="mb-footer">
+                <div class="pull-right">
+                    <input type="hidden" value="{{ request.scheme }}://{{ request.get_host }}/delete_subject/" name="" id="deleteurl">
+                    <button class="btn btn-success btn-lg mb-control-yes">Yes</button>
+                    <button class="btn btn-default btn-lg mb-control-close">No</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<!-- Bootstrap 3.x Modal -->
+<div class="modal fade" id="modal-default" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+          <h4 class="modal-title" id="myModalLabel">Edit Subject</h4>
+        </div>
+        <div class="modal-body">
+            <div class="row custom-margin-bottom">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <div class="col-md-12 col-xs-12">
+                            <input type="hidden" id="edit_id" />
+                            <input type="text" id="edit_name" autofocus class="form-control" placeholder="Subject Name" />
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <div class="col-md-12 col-xs-12">
+                            <select class="form-control" id="edit_select">
+                                <option value="1">Active</option>
+                                <option value="0">Deactive</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="form-group">
+                        <div class="col-md-12" id="checkboxContainer">
+                            {% comment %} {% for class in academic_classes %}
+                            <div class="checkbox">
+                                <label>
+                                    <input type="checkbox" id="edit_class_{{class.id}}" name="classes" class="classCheckbox" value="{{class.id}}" />
+                                    Class {{class.class_name}}
+                                </label>
+                            </div>
+                            {% endfor %} {% endcomment %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        
+        <div class="modal-footer">
+            <button type="button" class="btn btn-default pull-left" data-dismiss="modal">Close</button>
+            <button type="button" class="btn btn-primary pull-right" onclick="edit_subject()">Update</button>
+            <input type="hidden" value="{{ request.scheme }}://{{ request.get_host }}/update_subject_details/" name="" id="contacturl">
+        </div>
+        
+        
+      </div><!-- /.modal-content -->
+    </div><!-- /.modal-dialog -->
+</div><!-- /.modal -->
+  
+<div class="modal fade" id="modal-default1" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+          <h4 class="modal-title" id="myModalLabel">View Subject</h4>
+        </div>
+        <div class="modal-body">
+            <!-- Language Section -->
+            <div class="row">
+                <div class="col-xs-3">
+                    <label>Subject:</label>
+                </div>
+                <div class="col-xs-9">
+                    <span id="viewsubject"></span>
+                </div>
+            </div>
+        
+            <!-- Status Section -->
+            <div class="row">
+                <div class="col-xs-3">
+                    <label>Status:</label>
+                </div>
+                <div class="col-xs-9">
+                    <span id="viewselect">Active</span>
+                </div>
+            </div>
+        
+            <!-- Classes Section -->
+            <div class="row">
+                <div class="col-xs-12">
+                    <h6><span><u>Classes</u></span></h6>
+                    <ul id="licontiner">
+                        <li> <span id="classes">English</span></li>
+                    </ul>
+                    <!-- Add more classes as needed -->
+                </div>
+            </div>
+        </div>
+        
+        
+        
+        
+        
+        
+        <div class="modal-footer">
+            <button type="button" class="btn btn-default pull-left" data-dismiss="modal">Close</button>
+           
+        </div>
+        
+        
+      </div><!-- /.modal-content -->
+    </div><!-- /.modal-dialog -->
+</div>
+
+  {% endblock %}
+
+
+
+
+
+
+
+

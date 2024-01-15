@@ -1,0 +1,357 @@
+{% extends 'admin_base.html' %}
+{% block content %}
+<ul class="breadcrumb">
+    <li><a href="#">Home</a></li>     
+    {% comment %} <li class="active">Master</li>                {% endcomment %}
+    <li class="active">Employee Register</li>
+</ul>
+<!-- END BREADCRUMB -->                       
+ {% comment %} <div class="page-title">                    
+    <h2><span class="fa fa-arrow-circle-o-left"></span> Manage Qualification</h2>
+</div>                     {% endcomment %}
+
+
+<!-- PAGE CONTENT WRAPPER -->
+<div class="page-content-wrap"> 
+          <div class="row">
+            <div class="container mt-3">
+              <form method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                <div class="row jumbotron box8">
+                  <div class="container">
+                    <div class="row d-flex align-items-stretch">
+                      <div class="col-sm-12 mb-4">
+                        <h1 class="text-center text-primary">Employee Registration</h1>
+                      </div>
+                      <div class="col-sm-6 form-group">
+                        <label for="name-f">Full Name</label>
+                        <input type="text" class="form-control" name="fname" id="name-f" placeholder="Enter your first name." required>
+                      </div>
+                      
+                      <div class="col-sm-6 form-group">
+                        <label for="name-l">Last Name</label>
+                        <input type="text" class="form-control" name="lname" id="name-l" placeholder="Enter your last name." required>
+                      </div>
+                      <div class="col-sm-6 form-group">
+                        <label for="Date">Date Of Birth</label>
+                        <input type="date" name="dob" class="form-control" id="Date" placeholder="" required>
+                      </div>
+                      <div class="col-sm-6 form-group">
+                        <label for="address-1">Address Line</label>
+                        <textarea class="form-control" name="Locality" id="address-1" placeholder="Locality/House/Street no." rows="3" required style="width: 100%;"></textarea>
+                      </div>
+                      
+                    </div>
+                    <div class="row">
+                      
+                        <div class="col-sm-6 form-group">
+                            <label for="email">Email</label>
+                            <input type="email" class="form-control" name="email" id="email" placeholder="Enter your email." required>
+                          </div>
+                      <div class="col-sm-6 form-group">
+                        <label for="tel">Phone</label>
+                        <input type="tel" name="phone" class="form-control" id="tel" placeholder="Enter Your Contact Number." required>
+                      </div>
+                      <div class="col-sm-6 form-group">
+                        <label for="sex">Gender</label>
+                        <select id="sex" name="gender" class="form-control">
+                          <option value="0">Male</option>
+                          <option value="1">Female</option>
+                          <option value="2">Unspecified</option>
+                        </select>
+                      </div>
+                      <div class="col-sm-6 form-group">
+                        <label for="Qualification">Qualification</label>
+                        <select id="Qualification" name="qualification" class="form-control">
+                          {% for i in qualification_data  %}
+                          <option value="{{i.id}}">{{i.qualification_name}}</option>
+                          {% endfor %}
+                        </select>
+                      </div>
+                      <div class="col-sm-6 form-group">
+                        <label for="designation">Designation</label>
+                        <select id="designation" name="designation" class="form-control">
+                          {% for i in designation_data  %}
+                          <option value="{{i.id}}">{{i.designation_name}}</option>
+                          {% endfor %}
+                        </select>
+                      </div>
+                      <div class="col-sm-6 form-group">
+                        <label for="department">Department</label>
+                        <select id="department" name="department" class="form-control">
+                          {% for i in department_data  %}
+                          <option value="{{i.id}}">{{i.department_name}}</option>
+                          {% endfor %}
+                        </select>
+                      </div>
+                      <div class="col-sm-6 form-group">
+                        <label for="Employee_Category Category">Employee Category</label>
+                        <select id="Employee_Category" name="EmployeeCategory" class="form-control" onchange="showAdditionalFields()">
+                          {% for i in employee_data  %}
+                          <option value='{ "id": {{ i.id }}, "area": "{{ i.employee_category_area }}" }'>{{i.employee_category_name}}</option>
+                          {% endfor %}
+                        </select>
+                      </div>
+                      <div class="col-sm-6 form-group">
+                        <label for="snumber">Salary Amount</label>
+                        <input type="number" class="form-control" name="snumber" id="snumber" placeholder="Enter your Salary Amount" required>
+                      </div>
+                      <div class="row" id="teacher-fields" style="display: none;">
+                        <div class="col-sm-6 form-group">
+                            <label for="class">Class</label>
+                            <select id="class" name="class" class="form-control" onchange="updateSubjects()">
+                                {% for i in class_data  %}
+                                <option value="{{i.id}}">{{i.class_name}}</option>
+                                {% endfor %}
+                            </select>
+                            <input type="hidden" value="{{ request.scheme }}://{{ request.get_host }}/get_register_subjects/" name="" id="updatesubject">
+                        </div>
+                    
+                        <div class="col-sm-6 form-group">
+                            <label for="division">Division</label>
+                            <select id="division" name="division" class="form-control">
+                                {% for i in division_data  %}
+                                <option value="{{i.id}}">{{i.division_name}}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    
+                        <div class="col-sm-6 form-group">
+                            <label for="subject">Subject</label>
+                            <select id="subject" name="subject" class="form-control">
+                              
+                            </select>                        
+                        
+                        </div>
+                  
+                        <div class="col-sm-6 form-group">
+                            <input type="button" class=" btn btn-primary" value="ADD" onclick="addtoTable()">
+                          </div>
+                          <table class="table datatable" id="classTable">
+                            <thead>
+                                <tr>
+
+                                    <th>Class</th>
+                                    
+                                    <th>Division</th>
+                                    <th>Subject</th>
+                                    <th>Action</th>
+    
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td></td>
+                                    <td></td>
+                                    <td>
+                                       
+                                    </td>
+                                    <td></td>
+                                    <td>
+                                        
+                                    </td>
+                                </tr>
+                               
+                            </tbody>
+                        </table>
+                        
+                        
+                      </div>
+                  
+                    
+                    <div class="row">
+
+                      <div class="col-sm-6 form-group">
+                        <label for="Date">Joining Date</label>
+                        <input type="date" name="jdate" class="form-control" id="jdate" placeholder="" required>
+                      </div>
+      
+                      <div class="col-sm-6 form-group">
+                        <label for="customFile">Photo</label>
+                        <div class="input-group">
+                          <label class="input-group-btn">
+                            <span class="btn btn-primary">
+                              Browse&hellip; <input type="file" style="display: none;" name="photo" id="customFile" multiple>
+                            </span>
+                          </label>
+                          <input type="text" class="form-control" readonly>
+                        </div>
+                      </div>
+      
+                      <div class="col-sm-12 form-group mb-0">
+                        <button class="btn btn-primary float-right">Submit</button>
+                      </div>
+                    </div>
+
+                    </div>
+                  </div>
+                </div>
+              </form>
+            </div>
+          </div>
+       
+      
+
+
+    {% comment %} <div class="row">
+        <div class="col-md-12">
+        <form class="form-horizontal" method="post" enctype="multipart/form-data" id="myForm">
+                {% csrf_token %}
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <h3 class="panel-title"><strong>New </strong> Qualification</h3>
+                    <ul class="panel-controls">
+                        <li><a href="#" class="panel-remove"><span class="fa fa-times"></span></a></li>
+                    </ul>
+                </div>
+                <div class="panel-body">                                                                        
+                    
+                    <div class="row">
+                        <div class="col-md-12 px-5 ">
+                            <div class="form-group">
+                                <input type="text" name='qualification_name'  autofocus class="form-control" placeholder="Qualification Name"/>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    
+
+                </div>
+                <div class="panel-footer">
+                    <input type="reset" value="Clear Form" class="btn btn-default">                                 
+                    <button class="btn btn-primary pull-right">Submit</button>
+                </div>
+            </div>
+        </form>
+            <div class="panel panel-default">
+                <div class="panel-heading">                                
+                    <h3 class="panel-title">Default</h3>
+                    <ul class="panel-controls">
+                        <li><a href="#" class="panel-collapse"><span class="fa fa-angle-down"></span></a></li>
+                        <li><a href="#" class="panel-refresh"><span class="fa fa-refresh"></span></a></li>
+                        <li><a href="#" class="panel-remove"><span class="fa fa-times"></span></a></li>
+                    </ul>                                
+                </div>
+                <div class="panel-body">
+                    <table class="table datatable">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Qualification Name</th>
+                                
+                                <th>Status</th>
+                                <th>Action</th>
+
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for academic_qualification in academic_qualifications %}
+                            <tr id="{{academic_qualification.id}}">
+                                <td>{{ forloop.counter }}</td>
+                                <td>{{ academic_qualification.qualification_name }}</td>
+                                <td>
+                                    {% if academic_qualification.is_active %}
+                                    <span class="label label-success label-form">Active</span>
+                                    {% else %}
+                                    <span class="label label-danger ">Deactive</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <button class="btn btn-info" onclick="edit_pop_qualification({{academic_qualification.id}})">
+                                        <span id ="spinner{{academic_qualification.id}}" class="fa fa-pencil"></span>
+                                    </button>
+                                    {% if not academic_qualification.is_active %}
+                                    <a onclick="delete_qualification({{academic_qualification.id}})">
+                                        <button class="btn btn-danger">
+                                            <span class="glyphicon glyphicon-trash"></span>
+                                        </button>
+                                    </a>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                             
+                            
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+        </div>
+        <input type="hidden" value="{{ request.scheme }}://{{ request.get_host }}/get_qualification_details/" name="" id="url">
+
+    </div> {% endcomment %}
+
+</div>
+
+{% endblock %}
+{% block message %}
+
+<div class="message-box animated fadeIn" data-sound="alert" id="mb-remove-row">
+    <div class="mb-container">
+        <div class="mb-middle">
+            <div class="mb-title"><span class="fa fa-times"></span> Remove <strong>Data</strong> ?</div>
+            <div class="mb-content">
+                <p>Are you sure you want to delete?</p>                    
+                <p>Press Yes if you sure.</p>
+            </div>
+            <div class="mb-footer">
+                <div class="pull-right">
+                    <input type="hidden" value="{{ request.scheme }}://{{ request.get_host }}/delete_subject/" name="" id="deleteurl">
+                    <button class="btn btn-success btn-lg mb-control-yes">Yes</button>
+                    <button class="btn btn-default btn-lg mb-control-close">No</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<!-- Bootstrap 3.x Modal -->
+<div class="modal fade" id="modal-default" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+          <h4 class="modal-title" id="myModalLabel">Edit Qualification</h4>
+        </div>
+        <div class="modal-body">
+            <div class="row custom-margin-bottom">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <div class="col-md-12 col-xs-12">
+                            <input type="hidden"  id="edit_id"/>
+                            <input type="text" id="edit_name" autofocus class="form-control"  placeholder="Qualification Name"/>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <div class="col-md-12 col-xs-12">                                                                                            
+                            <select class="form-control " id="edit_select">
+                                <option value="1">Active</option>
+                                <option value="0">Deactive</option>
+                                
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        
+            
+        </div>
+        
+        <div class="modal-footer">
+            <button type="button" class="btn btn-default pull-left" data-dismiss="modal">Close</button>
+            <button type="button" class="btn btn-primary pull-right" onclick="edit_qualification()">Update</button>
+            <input type="hidden" value="{{ request.scheme }}://{{ request.get_host }}/update_qualification_details/" name="" id="contacturl">
+        </div>
+        
+        
+      </div><!-- /.modal-content -->
+    </div><!-- /.modal-dialog -->
+  </div><!-- /.modal -->
+  
+{% endblock %}
